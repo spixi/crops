@@ -14,11 +14,11 @@ of the license, or (at your option) any later version.
 -- Intllib
 local S = crops.intllib
 
-minetest.register_node("crops:tomato_seed", {
-	description = S("Tomato seed"),
-	inventory_image = "crops_tomato_seed.png",
-	wield_image = "crops_tomato_seed.png",
-	tiles = { "crops_tomato_plant_1.png" },
+minetest.register_node("crops:eggfruit_seed", {
+	description = S("Eggfruit seed"),
+	inventory_image = "crops_eggfruit_seed.png",
+	wield_image = "crops_eggfruit_seed.png",
+	tiles = { "crops_eggfruit_plant_1.png" },
 	drawtype = "plantlike",
 	paramtype2 = "meshoptions",
 	waving = 1,
@@ -26,7 +26,7 @@ minetest.register_node("crops:tomato_seed", {
 	use_texture_alpha = true,
 	walkable = false,
 	paramtype = "light",
-	node_placement_prediction = "crops:tomato_plant_1",
+	node_placement_prediction = "crops:eggfruit_plant_1",
 	groups = { snappy=3,flammable=3,flora=1,attached_node=1 },
 	drop = {},
 	sounds = default.node_sound_leaves_defaults(),
@@ -36,7 +36,7 @@ minetest.register_node("crops:tomato_seed", {
 		if minetest.get_item_group(under.name, "soil") <= 1 then
 			return
 		end
-		crops.plant(pointed_thing.above, {name="crops:tomato_plant_1", param2 = 1})
+		crops.plant(pointed_thing.above, {name="crops:eggfruit_plant_1", param2 = 1})
 		if not minetest.settings:get_bool("creative_mode") then
 			itemstack:take_item()
 		end
@@ -44,11 +44,11 @@ minetest.register_node("crops:tomato_seed", {
 	end
 })
 
-for stage = 1, 6 do
+for stage = 1, 7 do
 	local node_def =
 	{
-		description = S("Tomato plant"),
-		tiles = { "crops_tomato_plant_" .. stage .. ".png" },
+		description = S("Eggfruit plant"),
+		tiles = { "crops_eggfruit_plant_" .. stage .. ".png" },
 		drawtype = "plantlike",
 		paramtype2 = "meshoptions",
 		waving = 1,
@@ -61,49 +61,50 @@ for stage = 1, 6 do
 		sounds = default.node_sound_leaves_defaults(),
 		selection_box = {
 			type = "fixed",
-			fixed = {-0.45, -0.5, -0.45,  0.45, -0.6 + (((math.min(stage, 4)) + 1) / 5), 0.45}
+			fixed = {-0.45, -0.5, -0.45,  0.45, -0.6 + (((math.min(stage, 5)) + 1) / 6), 0.45}
 		}
 	}
 
-	if stage == 5 then
+	if stage == 6 then
 		node_def.on_dig = function(pos, node, digger)
 			local drops = {}
 			for i = 1, math.random(1, 2) do
-				table.insert(drops, "crops:tomato")
+				table.insert(drops, "crops:eggfruit")
 			end
 			core.handle_node_drops(pos, drops, digger)
 
 			local meta = minetest.get_meta(pos)
-			local ttl = meta:get_int("crops_tomato_ttl")
+			local ttl = meta:get_int("crops_eggfruit_ttl")
 			if ttl > 1 then
-				minetest.swap_node(pos, { name = "crops:tomato_plant_4", param2 = 1})
-				meta:set_int("crops_tomato_ttl", ttl - 1)
+				minetest.swap_node(pos, { name = "crops:eggfruit_plant_4", param2 = 1})
+				meta:set_int("crops_eggfruit_ttl", ttl - 1)
 			else
 				crops.die(pos)
 			end
 		end
 	end
 	
-	minetest.register_node("crops:tomato_plant_" .. stage , node_def)
+	minetest.register_node("crops:eggfruit_plant_" .. stage , node_def)
 end
 
-minetest.register_craftitem("crops:tomato", {
-	description = S("Tomato"),
-	inventory_image = "crops_tomato.png",
+minetest.register_craftitem("crops:eggfruit", {
+	description = S("Eggfruit"),
+	inventory_image = "crops_eggfruit.png",
 	on_use = minetest.item_eat(1)
 })
 
 minetest.register_craft({
 	type = "shapeless",
-	output = "crops:tomato_seed",
-	recipe = { "crops:tomato" }
+	output = "crops:eggfruit_seed",
+	recipe = { "crops:eggfruit" }
 })
 
 --
 -- grows a plant to mature size
 --
 minetest.register_abm({
-	nodenames = { "crops:tomato_plant_1", "crops:tomato_plant_2", "crops:tomato_plant_3" },
+	nodenames = { "crops:eggfruit_plant_1", "crops:eggfruit_plant_2", "crops:eggfruit_plant_3",
+	              "crops:eggfruit_plant_4" },
 	neighbors = { "group:soil" },
 	interval = crops.settings.interval,
 	chance = crops.settings.chance,
@@ -111,7 +112,8 @@ minetest.register_abm({
 		if not crops.can_grow(pos) then
 			return
 		end
-		local n = string.gsub(node.name, "4", "5")
+		local n = string.gsub(node.name, "5", "6")
+		n = string.gsub(n, "4", "5")
 		n = string.gsub(n, "3", "4")
 		n = string.gsub(n, "2", "3")
 		n = string.gsub(n, "1", "2")
@@ -120,10 +122,10 @@ minetest.register_abm({
 })
 
 --
--- grows a tomato
+-- grows an eggfruit
 --
 minetest.register_abm({
-	nodenames = { "crops:tomato_plant_4" },
+	nodenames = { "crops:eggfruit_plant_5" },
 	neighbors = { "group:soil" },
 	interval = crops.settings.interval,
 	chance = crops.settings.chance,
@@ -132,38 +134,38 @@ minetest.register_abm({
 			return
 		end
 		local meta = minetest.get_meta(pos)
-		local ttl = meta:get_int("crops_tomato_ttl")
+		local ttl = meta:get_int("crops_eggfruit_ttl")
 		local damage = meta:get_int("crops_damage")
 		if ttl == 0 then
-			-- damage 0   - drops 4-6
+			-- damage 0   - drops 4-5
 			-- damage 50  - drops 2-3
 			-- damage 100 - drops 0-1
-			ttl = math.random(4 - (4 * (damage / 100)), 6 - (5 * (damage / 100)))
+			ttl = math.random(4 - (4 * (damage / 100)), 5 - (4 * (damage / 100)))
 		end
 		if ttl > 1 then
-			minetest.swap_node(pos, { name = "crops:tomato_plant_5", param2 = 1 })
-			meta:set_int("crops_tomato_ttl", ttl)
+			minetest.swap_node(pos, { name = "crops:eggfruit_plant_6", param2 = 1 })
+			meta:set_int("crops_eggfruit_ttl", ttl)
 		else
 			crops.die(pos)
 		end
 	end
 })
 
-crops.tomato_die = function(pos)
-	minetest.swap_node(pos, { name = "crops:tomato_plant_6", param2 = 1 })
+crops.eggfruit_die = function(pos)
+	minetest.swap_node(pos, { name = "crops:eggfruit_plant_7", param2 = 1 })
 end
 
 local properties = {
-	die = crops.tomato_die,
-	waterstart = 19,
+	die = crops.eggfruit_die,
+	waterstart = 20,
 	wateruse = 1,
 	night = 5,
-	soak = 80,
-	soak_damage = 90,
-	wither = 20,
+	soak = 84,
+	soak_damage = 70,
+	wither = 15,
 	wither_damage = 10,
 }
 
-for stage = 1, 5 do
-	crops.register({ name = "crops:tomato_plant_" .. stage, properties = properties })
+for stage = 1, 6 do
+	crops.register({ name = "crops:eggfruit_plant_" .. stage, properties = properties })
 end
